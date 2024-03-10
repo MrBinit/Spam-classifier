@@ -1,58 +1,35 @@
-# import uvicorn
-# from fastapi import FastAPI
-# from pydantic import BaseModel
-# import pickle
+from flask import Flask, request, jsonify, render_template
+import joblib
 
-# # Load your trained model using pickle
-# with open("model_xgb.pkl", "rb") as f:
-#     model = pickle.load(f)
+app = Flask(__name__)
 
-# # Define FastAPI app
-# app = FastAPI()
-
-# # Define request body model
-# class TextData(BaseModel):
-#     text: str
-
-# # Define classification endpoint
-# @app.post("/classify")
-# async def classify(text_data: TextData):
-#     text = text_data.text
-#     # ML model to classify the text
-#     prediction = model.predict([text])[0]
-#     result = "Spam" if prediction == 1 else "Not Spam"
-#     return {"result": result}
-
-
-# if __name__ == "__main__":
-#     uvicorn.run(app,host= '127.0.0.1', port = 5000)
-
-
-import uvicorn
-from fastapi import FastAPI
-from pydantic import BaseModel
-import joblib  # Using joblib for loading XGBoost model
+# Load the trained preprocessing components
+tfidf_vectorizer = joblib.load("tfidf_vectorizer.pkl")
+label_encoder = joblib.load("Label_encoder.pkl")
 
 # Load your trained model using joblib
 with open("model_xgb.pkl", "rb") as f:
     model = joblib.load(f)
 
-# Define FastAPI app
-app = FastAPI()
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# Define request body model
-class TextData(BaseModel):
-    text: str
-
-# Define classification endpoint
-@app.post("/classify")
-async def classify(text_data: TextData):
-    text = text_data.text
-    # ML model to classify the text
-    prediction = model.predict([text])[0]
-    result = "Spam" if prediction == 1 else "Not Spam"
-    return {"result": result}
+@app.route('/classify', methods=['POST'])
+def classify():
+    # Get input text from HTML form
+    text = request.form['text']
+    
+    # Preprocess input text using TF-IDF vectorizer
+    X_text = tfidf_vectorizer.transform([text])
+    
+    # Make prediction using the model
+    prediction = model.predict(X_text)
+    
+    # Decode prediction using Label Encoder
+    result = label_encoder.inverse_transform(prediction)[0]
+    
+    return render_template('index.html', result=result)
 
 if __name__ == "__main__":
-    # Run the FastAPI app with uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=5000)
+    app.run(debug=True)

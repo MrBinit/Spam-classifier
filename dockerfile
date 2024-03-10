@@ -1,18 +1,28 @@
-# Use the official Python image as a base image
+# Use the official Python base image
 FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the FastAPI script and requirements file into the container
-COPY ./app.py /app
-COPY ./model_xgb.pkl /app
+# Copy the requirements file into the container at /app
+COPY requirements.txt .
 
-# Install dependencies
-RUN pip install unicorn
+# Install Flask and other dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port that the FastAPI application will run on
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Copy the label_encoder.pkl file into the container at /app
+COPY Label_encoder.pkl /app
+
+# Copy the tfid_vectorizer_encoder.pkl file into the container at /app
+COPY tfidf_vectorizer.pkl /app
+# Expose the Flask port
 EXPOSE 5000
 
-# Command to run the FastAPI application using uvicorn
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
+# Define environment variable
+ENV FLASK_APP=app.py
+
+# Run the Flask application
+CMD ["flask", "run", "--host=0.0.0.0"]

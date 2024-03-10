@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,5 +29,25 @@
             });
         }
     </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classifier</title>
+</head>
+<body>
+    <h1>Spam Classifier</h1>
+    <form id="spam-form" action="/classify" method="post">
+        <textarea id="text-input" name="text" rows="4" cols="50"></textarea><br>
+        <button type="submit">Classify</button>
+    </form>
+    {% if result %}
+        <p id="result">Result: {{ result }}</p>
+    {% endif %}
 </body>
 </html>
